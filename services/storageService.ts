@@ -54,9 +54,24 @@ export class StorageService {
   }
 
   static deleteWorkout(workoutId: string): void {
+    console.log('[StorageService] deleteWorkout called for ID:', workoutId);
     let allWorkouts = this.getAllWorkouts();
-    allWorkouts = allWorkouts.filter(w => w.id !== workoutId);
+    console.log('[StorageService] Workouts before deletion:', JSON.stringify(allWorkouts.map(w => w.id)));
+    
+    const initialCount = allWorkouts.length;
+    allWorkouts = allWorkouts.filter(w => {
+      // console.log(`[StorageService] Comparing w.id: ${w.id} (type: ${typeof w.id}) with workoutId: ${workoutId} (type: ${typeof workoutId}). Match: ${w.id === workoutId}`);
+      return w.id !== workoutId;
+    });
+    const finalCount = allWorkouts.length;
+
+    console.log(`[StorageService] Workouts after filtering (initial: ${initialCount}, final: ${finalCount}):`, JSON.stringify(allWorkouts.map(w => w.id)));
+    
+    if (initialCount === finalCount) {
+        console.warn(`[StorageService] Workout with ID ${workoutId} not found for deletion or filter failed.`);
+    }
+
     localStorage.setItem(WORKOUTS_KEY, JSON.stringify(allWorkouts));
+    console.log('[StorageService] Workouts saved to localStorage. New raw value:', localStorage.getItem(WORKOUTS_KEY));
   }
 }
-    

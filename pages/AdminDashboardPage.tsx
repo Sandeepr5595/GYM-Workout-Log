@@ -29,6 +29,11 @@ const AdminDashboardPage: React.FC = () => {
   const { allUsersList, updateUserStatus, currentUser } = useAuth();
   const [filter, setFilter] = useState<UserStatus | 'all'>(UserStatus.Pending);
 
+  // Log the allUsersList from context whenever it changes or the component re-renders
+  useEffect(() => {
+    console.log('[AdminDashboardPage] allUsersList from context:', allUsersList.map(u => ({id: u.id, email: u.email, status: u.status})));
+  }, [allUsersList]);
+
   const usersToDisplay = useMemo(() => {
     if (!allUsersList || !currentUser) return [];
     // Ensure admin cannot accidentally modify their own status through this interface by filtering them out
@@ -36,6 +41,8 @@ const AdminDashboardPage: React.FC = () => {
   }, [allUsersList, currentUser]);
 
   const filteredUsers = useMemo(() => {
+    // console.log('[AdminDashboardPage] Filtering users. Current filter:', filter);
+    // console.log('[AdminDashboardPage] usersToDisplay for filtering:', usersToDisplay.map(u => ({id: u.id, email: u.email, status: u.status})));
     return usersToDisplay.filter(user => {
       if (filter === 'all') return true;
       return user.status === filter;
@@ -43,8 +50,10 @@ const AdminDashboardPage: React.FC = () => {
   }, [usersToDisplay, filter]);
 
   const handleUpdateStatus = async (userId: string, status: UserStatus) => {
+    console.log(`[AdminDashboardPage] handleUpdateStatus called for userId: ${userId}, new status: ${status}`);
     await updateUserStatus(userId, status);
     // The list will automatically update due to allUsersList changing in context
+    console.log('[AdminDashboardPage] updateUserStatus promise resolved.');
   };
   
   return (

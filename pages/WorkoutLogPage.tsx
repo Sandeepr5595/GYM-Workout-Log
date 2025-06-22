@@ -29,8 +29,13 @@ const WorkoutLogPage: React.FC<WorkoutLogPageProps> = ({ navigate }) => {
 
   const fetchWorkouts = useCallback(() => {
     if (currentUser) {
+      console.log('[WorkoutLogPage] Fetching workouts for user:', currentUser.id);
       const workouts = StorageService.getWorkouts(currentUser.id).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      console.log('[WorkoutLogPage] Workouts fetched:', workouts);
       setUserWorkouts(workouts);
+    } else {
+      console.log('[WorkoutLogPage] No current user, clearing workouts.');
+      setUserWorkouts([]);
     }
   }, [currentUser]);
 
@@ -91,11 +96,14 @@ const WorkoutLogPage: React.FC<WorkoutLogPageProps> = ({ navigate }) => {
   };
 
   const handleDeleteWorkout = (workoutId: string) => {
+    console.log('[WorkoutLogPage] handleDeleteWorkout called for ID:', workoutId);
     if(window.confirm('Are you sure you want to delete this workout?')) {
       StorageService.deleteWorkout(workoutId);
       fetchWorkouts(); // Refresh list
       setMessage({ type: 'success', text: 'Workout deleted.' });
       setTimeout(() => setMessage(null), 3000);
+    } else {
+      console.log('[WorkoutLogPage] Deletion cancelled by user for ID:', workoutId);
     }
   };
 
@@ -209,4 +217,3 @@ const WorkoutLogPage: React.FC<WorkoutLogPageProps> = ({ navigate }) => {
 };
 
 export default WorkoutLogPage;
-    
