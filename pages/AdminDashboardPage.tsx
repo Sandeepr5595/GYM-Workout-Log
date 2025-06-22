@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { User, UserStatus } from '../types';
 import Button from '../components/ui/Button';
@@ -25,30 +26,27 @@ const UserApprovalCard: React.FC<{ user: User; onUpdateStatus: (userId: string, 
 
 
 const AdminDashboardPage: React.FC = () => {
-  const { getAllUsers, updateUserStatus, currentUser } = useAuth();
-  const [users, setUsers] = useState<User[]>([]);
-  const [filter, setFilter] = useState<UserStatus | 'all'>(UserStatus.Pending); // Use enum member for initialization
+  const { allUsersList, updateUserStatus, currentUser } = useAuth();
+  const [filter, setFilter] = useState<UserStatus | 'all'>(UserStatus.Pending);
 
-  const fetchUsers = useCallback(() => {
-    const allUsers = getAllUsers();
-     // Ensure admin cannot accidentally modify their own status through this interface
-    setUsers(allUsers.filter(u => u.id !== currentUser?.id));
-  }, [getAllUsers, currentUser]);
+  const usersToDisplay = useMemo(() => {
+    if (!allUsersList || !currentUser) return [];
+    // Ensure admin cannot accidentally modify their own status through this interface by filtering them out
+    return allUsersList.filter(u => u.id !== currentUser.id);
+  }, [allUsersList, currentUser]);
 
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+  const filteredUsers = useMemo(() => {
+    return usersToDisplay.filter(user => {
+      if (filter === 'all') return true;
+      return user.status === filter;
+    });
+  }, [usersToDisplay, filter]);
 
   const handleUpdateStatus = async (userId: string, status: UserStatus) => {
     await updateUserStatus(userId, status);
-    fetchUsers(); // Refresh the list
+    // The list will automatically update due to allUsersList changing in context
   };
   
-  const filteredUsers = users.filter(user => {
-    if (filter === 'all') return true;
-    return user.status === filter;
-  });
-
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold orbitron text-brand-primary">Admin Dashboard</h1>
